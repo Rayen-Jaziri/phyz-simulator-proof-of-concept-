@@ -14,23 +14,27 @@ c.height = display_height * scale;
 let canvas_width = c.width;
 let canvas_height = c.height;
 
+let camera_x = 0;
+let camera_y = 0;
 
-let echelle_x_axis = 50;
-let echelle_y_axis = 50;
-
+let echelle_x_axis = 100;
+let echelle_y_axis = 100;
+const G = 6.67*10**-11
+const k = 9 * 10**-9
 
 let objects = [
     ball = {
     color: "#03adfc",
-    m : 10, //masse
+    m : 5, //masse
+    q : 1, //charge
     r : 15, //radius
     F : {      //net force
         x : 0,
-        y : -3
+        y : 0
     }, 
     v0 : {     // initial velocity
-        x : 2,
-        y : 4
+        x : 0,
+        y : 1
     },
     pos : {    // initial position
         x : -30,
@@ -40,30 +44,82 @@ let objects = [
         x: [],
         y: []
     } 
-}
+},
+sun = {
+    color: "rgb(241, 206, 76)",
+    m : 5, //masse
+    q : 10*10**9, //charge
+    r : 25, //radius
+    F : {      //net force
+        x : 0,
+        y : 0
+    }, 
+    v0 : {     // initial velocity
+        x : 0,
+        y : 0
+    },
+    pos : {    // initial position
+        x : 0,
+        y : 0
+    },
+    tail : {    //tail points
+        x: [],
+        y: []
+    } 
+},
 ]
 
 
 refrech(0)
 
 function refrech (t){
-    ctx.clearRect(0, 0, canvas_width, canvas_height);
-    // draw tail
+    ctx.fillStyle = "#212121"
+    ctx.fillRect(0, 0, canvas_width, canvas_height);
+    //ctx.clearRect(0, 0, canvas_width, canvas_height);
+    
+    for (i in objects){
+        camera_x += objects[i].pos.x;
+        camera_y -= objects[i].pos.y;
+    }
+    camera_x = objects[1].pos.x;
+    camera_y = objects[1].pos.y;
+
     for (thing of objects){
+        // draw tail:
         let tail_Max = 100;
         thing.tail.x.push(thing.pos.x);
         thing.tail.y.push(thing.pos.y);
+        /*
         if (thing.tail.x.length > tail_Max){
             thing.tail.x.shift();
             thing.tail.y.shift()
-        }
+        }*/
         for (i in thing.tail.x){
+            
             ctx.beginPath();
             ctx.arc(math_to_canvas_x(thing.tail.x[i]), math_to_canvas_y(thing.tail.y[i]), 1, 0, Math.PI * 2);
-            ctx.fillStyle = "#000000";
+            ctx.fillStyle = thing.color;
             ctx.fill();
         }
         
+        // calculations:
+        thing.F.x = 0;
+        thing.F.y = 0;
+
+        for (ball of objects){
+            if (ball != thing){
+                phi = Math.atan2((ball.pos.y - thing.pos.y),(ball.pos.x - thing.pos.x));
+                distance = Math.sqrt((ball.pos.x - thing.pos.x)**2 + (ball.pos.y - thing.pos.y)**2)
+                F = (G*thing.m * ball.m)/(distance**2); //gravitational force
+
+                F += (k * thing.q * ball.q)/(distance**2); //electric force
+
+                thing.F.x += F * Math.cos(phi);
+                thing.F.y += F * Math.sin(phi);
+
+            }
+        }
+
         a_x = thing.F.x / thing.m;
         a_y = thing.F.y / thing.m;
         
@@ -76,10 +132,10 @@ function refrech (t){
         ctx.beginPath()
         ctx.arc(math_to_canvas_x(thing.pos.x) ,math_to_canvas_y(thing.pos.y), thing.r, 0, 2 * Math.PI);
         ctx.fillStyle = thing.color;
-        ctx.fill();
+        ctx.fill();  
         
-        draw_arrow(thing.pos.x, thing.pos.y, thing.F.x, thing.F.y, 5, "#c71d1d")
-        draw_arrow(thing.pos.x, thing.pos.y, thing.v0.x, thing.v0.y, 5, "#25c71d")
+        draw_arrow(thing.pos.x, thing.pos.y, thing.F.x, thing.F.y, 70, "#c71d1d")
+        draw_arrow(thing.pos.x, thing.pos.y, thing.v0.x, thing.v0.y, 10, "#25c71d")
     
     }
 }
@@ -119,9 +175,9 @@ function draw_arrow(x, y, value_x, value_y, echelle, color){
 }
 
 function math_to_canvas_x(x){
-    return canvas_width/2 + (canvas_width*x)/(echelle_x_axis*2)
+    return canvas_width/2 + (canvas_width*(x - camera_x))/(echelle_x_axis*2)
 }
 
 function math_to_canvas_y(y){
-    return canvas_height/2 - (canvas_height*y)/(echelle_y_axis*2)
+    return canvas_height/2 - (canvas_height*(y - camera_y))/(echelle_y_axis*2)
 }
