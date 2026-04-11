@@ -6,27 +6,30 @@ const ctx = c.getContext("2d");
 const  display_width = 600;
 const  display_height = 600;
 const scale = 1;
+
 c.style.width = display_width + "px";
 c.style.height = display_height + "px";
+
 c.width = display_width * scale;
 c.height = display_height * scale;
 
 let canvas_width = c.width;
 let canvas_height = c.height;
 
-let camera_x = 0;
-let camera_y = 0;
+let camera_x;
+let camera_y;
 
 let echelle_x_axis = 100;
 let echelle_y_axis = 100;
-const G = 6.67*10**-11
+const G = 1 //6.67*10**-11
 const k = 9 * 10**-9
 
 let objects = [
-    ball = {
+ball = {
+    focus : true,
     color: "#03adfc",
-    m : 5, //masse
-    q : 1, //charge
+    m : 10, //masse
+    q : 0, //charge
     r : 15, //radius
     F : {      //net force
         x : 0,
@@ -37,7 +40,7 @@ let objects = [
         y : 1
     },
     pos : {    // initial position
-        x : -30,
+        x : -50,
         y : 0
     },
     tail : {    //tail points
@@ -46,9 +49,10 @@ let objects = [
     } 
 },
 sun = {
+    focus : false,
     color: "rgb(241, 206, 76)",
-    m : 5, //masse
-    q : 10*10**9, //charge
+    m : 50, //masse
+    q : 0, //charge
     r : 25, //radius
     F : {      //net force
         x : 0,
@@ -67,37 +71,64 @@ sun = {
         y: []
     } 
 },
+ball2 = {
+    focus : false,
+    color: "rgb(241, 76, 241)",
+    m : 10, //masse
+    q : 0, //charge
+    r : 20, //radius
+    F : {      //net force
+        x : 0,
+        y : -1
+    }, 
+    v0 : {     // initial velocity
+        x : 0,
+        y : -1
+    },
+    pos : {    // initial position
+        x : 50,
+        y : 0
+    },
+    tail : {    //tail points
+        x: [],
+        y: []
+    } }
 ]
 
 
 refrech(0)
 
 function refrech (t){
-    ctx.fillStyle = "#212121"
-    ctx.fillRect(0, 0, canvas_width, canvas_height);
-    //ctx.clearRect(0, 0, canvas_width, canvas_height);
+    ctx.clearRect(0, 0, canvas_width, canvas_height);
     
+    let k = 0;
+    camera_x = 0;
+    camera_y = 0;
     for (i in objects){
-        camera_x += objects[i].pos.x;
-        camera_y -= objects[i].pos.y;
+        if (objects[i].focus){
+            camera_x += objects[i].pos.x;
+            camera_y += objects[i].pos.y;
+            k ++;
+        }
     }
-    camera_x = objects[1].pos.x;
-    camera_y = objects[1].pos.y;
+    if (k != 0){
+        camera_x /= k;
+        camera_y /= k;
+    }
 
     for (thing of objects){
         // draw tail:
         let tail_Max = 100;
-        thing.tail.x.push(thing.pos.x);
-        thing.tail.y.push(thing.pos.y);
+        thing.tail.x.push(thing.pos.x-camera_x);
+        thing.tail.y.push(thing.pos.y-camera_y);
         /*
         if (thing.tail.x.length > tail_Max){
             thing.tail.x.shift();
             thing.tail.y.shift()
         }*/
         for (i in thing.tail.x){
-            
             ctx.beginPath();
-            ctx.arc(math_to_canvas_x(thing.tail.x[i]), math_to_canvas_y(thing.tail.y[i]), 1, 0, Math.PI * 2);
+            ctx.arc(math_to_canvas_x(thing.tail.x[i]+camera_x), math_to_canvas_y(thing.tail.y[i]-camera_y), 1, 0, Math.PI * 2);
             ctx.fillStyle = thing.color;
             ctx.fill();
         }
@@ -112,7 +143,7 @@ function refrech (t){
                 distance = Math.sqrt((ball.pos.x - thing.pos.x)**2 + (ball.pos.y - thing.pos.y)**2)
                 F = (G*thing.m * ball.m)/(distance**2); //gravitational force
 
-                F += (k * thing.q * ball.q)/(distance**2); //electric force
+                F += -(k * thing.q * ball.q)/(distance**2); //electric force
 
                 thing.F.x += F * Math.cos(phi);
                 thing.F.y += F * Math.sin(phi);
