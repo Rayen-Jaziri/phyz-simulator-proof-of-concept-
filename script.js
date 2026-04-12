@@ -1,3 +1,5 @@
+
+
 console.log("hello world");
 const body = document.getElementById("body");
 const c = document.getElementById("canvas");
@@ -95,12 +97,14 @@ ball2 = {
     } }
 ]
 
-
 refrech(0)
+draw_axis();
 
 function refrech (t){
     ctx.clearRect(0, 0, canvas_width, canvas_height);
     
+    draw_axis();
+
     let k = 0;
     camera_x = 0;
     camera_y = 0;
@@ -128,7 +132,7 @@ function refrech (t){
         }*/
         for (i in thing.tail.x){
             ctx.beginPath();
-            ctx.arc(math_to_canvas_x(thing.tail.x[i]+camera_x), math_to_canvas_y(thing.tail.y[i]-camera_y), 1, 0, Math.PI * 2);
+            ctx.arc(math_to_canvas_x(thing.tail.x[i]+camera_x), math_to_canvas_y(thing.tail.y[i]+camera_y), 1, 0, Math.PI * 2);
             ctx.fillStyle = thing.color;
             ctx.fill();
         }
@@ -203,6 +207,69 @@ function draw_arrow(x, y, value_x, value_y, echelle, color){
     ctx.moveTo(math_to_canvas_x(dx), math_to_canvas_y(dy));
     ctx.lineTo(math_to_canvas_x(head_x), math_to_canvas_y(head_y));
     ctx.stroke();
+}
+
+
+function draw_axis(){
+    axis_space_x = echelle_x_axis*2/5;
+    axis_space_y = echelle_y_axis*2/5;
+    
+    ctx.beginPath();
+    ctx.strokeStyle = "#000000";
+    ctx.fillStyle = "#000000"
+    ctx.font = "15px Arial"
+    ctx.moveTo(0, math_to_canvas_y(0));
+    ctx.lineTo(canvas_width, math_to_canvas_y(0));
+    ctx.stroke();
+    ctx.fillText("0", repepre_number_x(0), math_to_canvas_y(0) + 20);
+
+    ctx.moveTo(math_to_canvas_x(0), 0)
+    ctx.lineTo(math_to_canvas_x(0), canvas_height);
+    ctx.stroke();
+    ctx.fillText("0", math_to_canvas_x(0) + 10, repepre_number_y(0));
+
+    ctx.beginPath();
+    ctx.strokeStyle = "#C0C0C0";
+    ctx.fillStyle = "#C0C0C0";
+    
+    for (let i = Math.ceil(-echelle_y_axis + camera_y); i <= Math.ceil(echelle_y_axis + camera_y) + axis_space_y; i++){
+      if (i % axis_space_y == 0 && i != 0){
+        ctx.moveTo(0, math_to_canvas_y(i));
+        ctx.lineTo(canvas_width, math_to_canvas_y(i));
+        ctx.stroke();
+        ctx.fillText(i.toString(), repepre_number_x(i), math_to_canvas_y(i)+20);
+      }
+    }
+    for (let i = Math.ceil(-echelle_x_axis + camera_x)-axis_space_x; i <= Math.ceil(echelle_x_axis + camera_x); i++){
+      if (i % axis_space_x == 0 && i != 0){
+        ctx.moveTo(math_to_canvas_x(i), 0);
+        ctx.lineTo(math_to_canvas_x(i), canvas_height); 
+          ctx.stroke();
+          ctx.fillText(i.toString(), math_to_canvas_x(i)+5, repepre_number_y(i));
+    }
+    
+  }
+  
+
+}
+
+function repepre_number_x (i) {
+  if (math_to_canvas_x(0) < 0){
+    return 10;
+  }else if (math_to_canvas_x(0) > canvas_width) {
+    return canvas_width - 30;
+  }else{
+    return math_to_canvas_x(0) + 10;
+  }
+}
+function repepre_number_y (i) {
+  if (math_to_canvas_y(0) < 0){
+    return 20;
+  }else if (math_to_canvas_y(0) > canvas_height) {
+    return canvas_height - 10;
+  }else{
+    return math_to_canvas_y(0) + 20;
+  }
 }
 
 function math_to_canvas_x(x){
