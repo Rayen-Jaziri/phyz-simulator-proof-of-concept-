@@ -1,13 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>phyz simulator</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>phyz simulator</title>
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body id="body">
-    <canvas id="canvas"></canvas>
-    <script src="script.js"></script>
+  <button onclick="step(-24)">step_back</button>
+  <button id="reverse_button" onclick="play(-1)">Reverse</button>
+  <button id="start_button" onclick="play(1)">Play</button>
+  <button onclick="step(24)">step_forward</button>
+  <!--<button onclick="reset()">Reset</button>-->
+  <canvas id="canvas"></canvas>
+  <script src="script.js"></script>
 </body>
+
 </html>

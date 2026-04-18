@@ -5,4 +5,5 @@
 
     resize: both;
     overflow: auto;
+    display: block;
 }
