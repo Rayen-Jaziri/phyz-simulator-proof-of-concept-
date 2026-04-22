@@ -9,14 +9,17 @@ const reverse_button = document.getElementById("reverse_button");
 const display_width = 600;
 const display_height = 600;
 const scale = 1;
-const zoom = 0.5;
+let zoom = 1;
 let show_net_force = true;
 let fps = 24;
 let speed = 200;
+let camera_x = 80;
+let camera_y = 80;
 //echelles: 
 let echelle_x_axis = Math.floor(100 / zoom);
 let echelle_y_axis = Math.floor(100 / zoom);
 let force_echelle = 70;
+let speed_echelle = 10;
 
 c.style.width = display_width + "px";
 c.style.height = display_height + "px";
@@ -27,8 +30,6 @@ c.height = display_height * scale;
 let canvas_width = c.width;
 let canvas_height = c.height;
 
-let camera_x;
-let camera_y;
 
 const G = 1 //6.67*10**-11
 const k = 9 * 10 ** -9
@@ -56,9 +57,8 @@ let objects = [
       x: [],
       y: []
     }
-  },
-  sun = {
-    focus: false,
+  }, sun = {
+    focus: true,
     color: "rgb(241, 206, 76)",
     m: 50, //masse
     q: 0, //charge
@@ -79,9 +79,8 @@ let objects = [
       x: [],
       y: []
     }
-  },
-  ball2 = {
-    focus: false,
+  }, ball2 = {
+    focus: true,
     color: "rgb(241, 76, 241)",
     m: 10, //masse
     q: 0, //charge
@@ -102,36 +101,112 @@ let objects = [
       x: [],
       y: []
     }
-  }
-]
-let initial = structuredClone(objects);
+  },
+  /*
+    ball3 = {
+      focus: true,
+      color: "rgb(200, 10, 80)",
+      m: 15, //masse
+      q: 0, //charge
+      r: 10, //radius
+      F: {      //net force
+        x: 0,
+        y: 0
+      },
+      v0: {     // initial velocity
+        x: 1,
+        y: 1
+      },
+      pos: {    // initial position
+        x: 0,
+        y: 50
+      },
+      tail: {    //tail points
+        x: [],
+        y: []
+      }
+    },
+    ball4 = {
+      focus: false,
+      color: "rgb(80, 10, 200)",
+      m: 15, //masse
+      q: 0, //charge
+      r: 10, //radius
+      F: {      //net force
+        x: 0,
+        y: 0
+      },
+      v0: {     // initial velocity
+        x: -1,
+        y: 2
+      },
+      pos: {    // initial position
+        x: 50,
+        y: -50
+      },
+      tail: {    //tail points
+        x: [],
+        y: []
+      }
+    }*/
 
-refrech(1);
+]
+const initial = structuredClone(objects);
+
+refrech();
 draw_axis();
 
-function refrech(n) {
+function refrech() {
   ctx.clearRect(0, 0, canvas_width, canvas_height);
 
-  draw_axis();
 
-  let k = 0;
-  camera_x = 0;
-  camera_y = 0;
+  focus_k = 0;
   for (i in objects) {
-    if (objects[i].focus) {
-      camera_x += objects[i].pos.x;
-      camera_y += objects[i].pos.y;
-      k++;
+    if (objects[i].focus) focus_k++;
+  }
+  if (focus_k >= 1) {
+    let k = 0;
+    camera_x = 0;
+    camera_y = 0;
+    for (i in objects) {
+      if (objects[i].focus) {
+        camera_x += objects[i].pos.x;
+        camera_y += objects[i].pos.y;
+        k++;
+      }
+    }
+    if (k != 0) {
+      camera_x /= k;
+      camera_y /= k;
+    }
+
+    if (focus_k >= 2) {
+
+      let distance = Math.sqrt((Math.abs(objects[0].pos.x - camera_x)) ** 2 + (Math.abs(objects[0].pos.y - camera_y)) ** 2);
+
+      for (ball of objects) {
+        if (ball.focus) {
+          distance_x = Math.abs(ball.pos.x - camera_x);
+          distance_y = Math.abs(ball.pos.y - camera_y);
+
+          if (distance <= Math.sqrt(distance_x ** 2 + distance_y ** 2))
+            distance = Math.sqrt(distance_x ** 2 + distance_y ** 2);
+        }
+      }
+      echelle_axis = echelle_y_axis / 2//Math.sqrt(echelle_x_axis ** 2 + echelle_y_axis ** 2);
+
+      zoom = echelle_axis / (distance)
+      echelle_x_axis = Math.floor(echelle_x_axis / (echelle_axis / zoom > 100 / 2 ? zoom : 1))
+      echelle_y_axis = Math.floor(echelle_y_axis / (echelle_axis / zoom > 100 / 2 ? zoom : 1))
     }
   }
-  if (k != 0) {
-    camera_x /= k;
-    camera_y /= k;
-  }
+
+  draw_axis();
 
   for (thing of objects) {
     // draw tail:
     let tail_Max = 100;
+
     thing.tail.x.push(thing.pos.x - camera_x);
     thing.tail.y.push(thing.pos.y - camera_y);
 
@@ -155,9 +230,10 @@ function refrech(n) {
     ctx.fill();
 
     if (show_net_force) draw_arrow(thing.pos.x, thing.pos.y, thing.F.x, thing.F.y, force_echelle, "#c71d1d");
-    draw_arrow(thing.pos.x, thing.pos.y, thing.v0.x, thing.v0.y, 10, "#25c71d")
+    draw_arrow(thing.pos.x, thing.pos.y, thing.v0.x, thing.v0.y, speed_echelle, "#25c71d")
 
   }
+
 }
 
 function calculate(t) {
@@ -202,7 +278,7 @@ function play(n) {
       for (let i = 0; i < speed; i++) {
         calculate(n / fps);
       }
-      refrech(n);
+      refrech();
       is_playing = false;
     }, 1000 / (fps))
   } else {
@@ -213,16 +289,18 @@ function play(n) {
   }
 }
 function step(steps) {
+  is_playing = false;
+  play(0);
   for (let i = 0; i < Math.abs(Math.floor(steps)); i++) {
     calculate(Math.sign(steps) / fps);
   }
-  refrech(Math.sign(steps));
+  refrech();
 }
 function reset() {
   objects = initial;
-  console.log(initial);
-  console.log(objects)
-  refrech(1);
+  calculate(0);
+  refrech();
+  initial = structuredClone(objects)
 }
 function draw_arrow(x, y, value_x, value_y, echelle, color) {
   let dx = x + value_x * echelle / zoom;
@@ -254,8 +332,8 @@ function draw_arrow(x, y, value_x, value_y, echelle, color) {
 
 
 function draw_axis() {
-  axis_space_x = echelle_x_axis * 2 / 5;
-  axis_space_y = echelle_y_axis * 2 / 5;
+  axis_space_x = Math.ceil(2 * echelle_x_axis / 5);
+  axis_space_y = Math.ceil(2 * echelle_y_axis / 5);
 
   ctx.beginPath();
   ctx.strokeStyle = "#000000";
@@ -290,7 +368,6 @@ function draw_axis() {
       ctx.stroke();
       ctx.fillText(i.toString(), math_to_canvas_x(i) + 5, repepre_number_y(i));
     }
-
   }
 }
 
