@@ -1,9 +1,32 @@
+body {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 #canvas {
     border: solid;
-    width: 600px;
-    height: 600px;
+    width: 100%;
+    height: 100%;
 
     resize: both;
     overflow: auto;
-    display: block;
+
+}
+#screen {
+  border: solid;
+  width: fit-content;
+  height: fit-content;
+}
+
+#control {
+  border: solid;
+  min-width: fit-content;
+  flex-grow: 1
+}
+
+#preview_canvas {
+  width: 50px;
+  height: 50px;
+  border: solid;
 }

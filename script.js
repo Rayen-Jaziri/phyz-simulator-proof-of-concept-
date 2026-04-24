@@ -12,17 +12,20 @@ const scale = 1;
 let zoom = 1;
 let show_net_force = true;
 let fps = 24;
-let speed = 200;
+let speed = 50;
 let camera_x = 80;
 let camera_y = 80;
+let show_axis = true;
 //echelles: 
 let echelle_x_axis = Math.floor(100 / zoom);
 let echelle_y_axis = Math.floor(100 / zoom);
-let force_echelle = 70;
+let force_echelle = 50;
 let speed_echelle = 10;
+let tail_Max = 1000;
 
-c.style.width = display_width + "px";
-c.style.height = display_height + "px";
+
+//c.style.width = display_width + "px";
+//c.style.height = display_height + "px";
 
 c.width = display_width * scale;
 c.height = display_height * scale;
@@ -36,7 +39,7 @@ const k = 9 * 10 ** -9
 
 let objects = [
   ball = {
-    focus: true,
+    focus: false,
     color: "#03adfc",
     m: 10, //masse
     q: 0, //charge
@@ -50,7 +53,7 @@ let objects = [
       y: 1
     },
     pos: {    // initial position
-      x: -50,
+      x: -70,
       y: 0
     },
     tail: {    //tail points
@@ -60,7 +63,7 @@ let objects = [
   }, sun = {
     focus: true,
     color: "rgb(241, 206, 76)",
-    m: 50, //masse
+    m: 100, //masse
     q: 0, //charge
     r: 20, //radius
     F: {      //net force
@@ -79,8 +82,8 @@ let objects = [
       x: [],
       y: []
     }
-  }, ball2 = {
-    focus: true,
+  },/* ball2 = {
+    focus: false,
     color: "rgb(241, 76, 241)",
     m: 10, //masse
     q: 0, //charge
@@ -101,7 +104,7 @@ let objects = [
       x: [],
       y: []
     }
-  },
+  },*/
   /*
     ball3 = {
       focus: true,
@@ -205,7 +208,6 @@ function refrech() {
 
   for (thing of objects) {
     // draw tail:
-    let tail_Max = 100;
 
     thing.tail.x.push(thing.pos.x - camera_x);
     thing.tail.y.push(thing.pos.y - camera_y);
@@ -332,41 +334,43 @@ function draw_arrow(x, y, value_x, value_y, echelle, color) {
 
 
 function draw_axis() {
-  axis_space_x = Math.ceil(2 * echelle_x_axis / 5);
-  axis_space_y = Math.ceil(2 * echelle_y_axis / 5);
+  if (show_axis) {
+    axis_space_x = Math.ceil(2 * echelle_x_axis / 5);
+    axis_space_y = Math.ceil(2 * echelle_y_axis / 5);
 
-  ctx.beginPath();
-  ctx.strokeStyle = "#000000";
-  ctx.fillStyle = "#000000"
-  ctx.font = "15px Arial"
-  ctx.moveTo(0, math_to_canvas_y(0));
-  ctx.lineTo(canvas_width, math_to_canvas_y(0));
-  ctx.stroke();
-  ctx.fillText("0", repepre_number_x(0), math_to_canvas_y(0) + 20);
+    ctx.beginPath();
+    ctx.strokeStyle = "#000000";
+    ctx.fillStyle = "#000000"
+    ctx.font = "15px Arial"
+    ctx.moveTo(0, math_to_canvas_y(0));
+    ctx.lineTo(canvas_width, math_to_canvas_y(0));
+    ctx.stroke();
+    ctx.fillText("0", repepre_number_x(0), math_to_canvas_y(0) + 20);
 
-  ctx.moveTo(math_to_canvas_x(0), 0)
-  ctx.lineTo(math_to_canvas_x(0), canvas_height);
-  ctx.stroke();
-  ctx.fillText("0", math_to_canvas_x(0) + 10, repepre_number_y(0));
+    ctx.moveTo(math_to_canvas_x(0), 0)
+    ctx.lineTo(math_to_canvas_x(0), canvas_height);
+    ctx.stroke();
+    ctx.fillText("0", math_to_canvas_x(0) + 10, repepre_number_y(0));
 
-  ctx.beginPath();
-  ctx.strokeStyle = "#C0C0C0";
-  ctx.fillStyle = "#C0C0C0";
+    ctx.beginPath();
+    ctx.strokeStyle = "#C0C0C0";
+    ctx.fillStyle = "#C0C0C0";
 
-  for (let i = Math.ceil(-echelle_y_axis + camera_y); i <= Math.ceil(echelle_y_axis + camera_y) + axis_space_y; i++) {
-    if (i % axis_space_y == 0 && i != 0) {
-      ctx.moveTo(0, math_to_canvas_y(i));
-      ctx.lineTo(canvas_width, math_to_canvas_y(i));
-      ctx.stroke();
-      ctx.fillText(i.toString(), repepre_number_x(i), math_to_canvas_y(i) + 20);
+    for (let i = Math.ceil(-echelle_y_axis + camera_y); i <= Math.ceil(echelle_y_axis + camera_y) + axis_space_y; i++) {
+      if (i % axis_space_y == 0 && i != 0) {
+        ctx.moveTo(0, math_to_canvas_y(i));
+        ctx.lineTo(canvas_width, math_to_canvas_y(i));
+        ctx.stroke();
+        ctx.fillText(i.toString(), repepre_number_x(i), math_to_canvas_y(i) + 20);
+      }
     }
-  }
-  for (let i = Math.ceil(-echelle_x_axis + camera_x) - axis_space_x; i <= Math.ceil(echelle_x_axis + camera_x); i++) {
-    if (i % axis_space_x == 0 && i != 0) {
-      ctx.moveTo(math_to_canvas_x(i), 0);
-      ctx.lineTo(math_to_canvas_x(i), canvas_height);
-      ctx.stroke();
-      ctx.fillText(i.toString(), math_to_canvas_x(i) + 5, repepre_number_y(i));
+    for (let i = Math.ceil(-echelle_x_axis + camera_x) - axis_space_x; i <= Math.ceil(echelle_x_axis + camera_x); i++) {
+      if (i % axis_space_x == 0 && i != 0) {
+        ctx.moveTo(math_to_canvas_x(i), 0);
+        ctx.lineTo(math_to_canvas_x(i), canvas_height);
+        ctx.stroke();
+        ctx.fillText(i.toString(), math_to_canvas_x(i) + 5, repepre_number_y(i));
+      }
     }
   }
 }

@@ -9,12 +9,20 @@
 </head>
 
 <body id="body">
-  <button onclick="step(-24)">step_back</button>
-  <button id="reverse_button" onclick="play(-1)">Reverse</button>
-  <button id="start_button" onclick="play(1)">Play</button>
-  <button onclick="step(24)">step_forward</button>
-  <!--<button onclick="reset()">Reset</button>-->
-  <canvas id="canvas"></canvas>
+  <div id="screen">
+    <div id="screen_buttons">
+      <button onclick="step(-24)">step_back</button>
+      <button id="reverse_button" onclick="play(-1)">Reverse</button>
+      <button id="start_button" onclick="play(1)">Play</button>
+      <button onclick="step(24)">step_forward</button>
+      <!--<button onclick="reset()">Reset</button>-->
+    </div>
+    <canvas id="canvas"></canvas>
+  </div>
+  <div id="control">
+    <canvas id="preview_canvas"></canvas>
+    <button></button>
+  </div>
   <script src="script.js"></script>
 </body>
 
